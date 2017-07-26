@@ -125,11 +125,11 @@ $(document).ready(function() {
 
 	var origin = new Vector2(view.size.width / 2, view.size.height / 2);
 	var numCircles = 100;
-	var maxLinFreq = 0.1;
-	var maxAngFreq = 0.1;
+	var maxLinFreq = 0.2;
+	var maxAngFreq = 0.03;
 	var minRadius = 25;
 	var maxRadius = 100;
-	var startColor = new Vector3(154, 16, 188);
+	var startColor = new Vector3(252, 17, 225);
 	var endColor = new Vector3(21, 4, 150);
 	var li = new LinearInterpolator(startColor, endColor);
 
