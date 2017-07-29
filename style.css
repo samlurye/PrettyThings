@@ -1,0 +1,133 @@
+body {
+	width: 100%;
+	height: 100%;
+	font-family: "Segoe UI", sans-serif;
+	color: #515151;
+}
+
+.settings-bar {
+	height: 100%;
+	width: 300px;
+	box-shadow: 0px 0px 10px #d1d1d1;
+	background-color: white;
+	position: fixed;
+	top: 0;
+	right: 0;
+	z-index: 10;
+}
+
+.settings-header {
+	position: fixed;
+	width: 300px;
+	height: 130px;
+	font-size: 40px;
+	line-height: 130px;
+	text-align: center;
+	top: 0;
+	right: 0;
+	border-bottom: 1px solid #d1d1d1;
+	background-color: white;
+}
+
+#settings {
+	overflow-y: scroll;
+	width: 300px;
+	height: inherit;
+	margin: 0px;
+	padding: 0px;
+	list-style-type: none;
+}
+
+#settings > li {
+	padding: 10px;
+	text-align: left;
+	border-bottom: 1px solid #d1d1d1;
+}
+
+#settings > li:first-child {
+	margin-top: 130px;
+}
+
+canvas {
+	width: 1000px;
+	height: 100%;
+}
+
+.setting-title {
+	font-size: 15px;
+	font-weight: bold;
+	margin-bottom: 7px;
+}
+
+.setting {
+	display: inline-block;
+	margin-top: 5px;
+	font-size: 14px;
+	width: 70px;
+	line-height: 21px;
+}
+
+input {
+	border-radius: 3px;
+	border: 1px solid #d1d1d1;
+	width: 200px;
+	text-align: right;
+}
+
+input:focus {
+	outline: none;
+	border-color: #0000ff;
+}
+
+.toggle {
+	width: 20px;
+	height: 16px;
+	margin-top: 7px;
+	margin-right: 5px;
+	display: inline-block;
+	float: right;
+	border-radius: 3px;
+	border: 1px solid #d1d1d1;
+}
+
+.toggle:hover {
+	background-color: #ccdfff;
+	border-color: #0000ff;
+	cursor: pointer;
+}
+
+.apply {
+	margin: auto;
+	margin-top: 7px;
+	width: 70px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+	font-size: 13px;
+	border-radius: 3px;
+	border: 1px solid #d1d1d1;
+}
+
+.apply:hover {
+	border-color: #0000ff;
+	cursor: pointer;
+}
+
+.apply-all {
+	position: fixed;
+	top: 100;
+	right: 10;
+	min-width: 70px;
+	margin: 0px;
+}
+
+.selected {
+	background-color: #ccdfff;
+	border-color: #0000ff;
+}
+
+
+
+
+
+
