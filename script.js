@@ -177,17 +177,18 @@ class Quaternion {
 		);
 	}
 
-	conjugate() {
-		return new Quaternion(Vector.scale(this.axis, -1), this.w);
+	static conjugate(q) {
+		return new Quaternion(Vector.scale(q.axis, -1), q.w);
 	}
 
 	rotate(v, theta) {
 		theta = theta / 2;
 		var qv = new Quaternion(v, 0);
-		this.axis = Vector.scale(Vector.normalize(this.axis), Math.sin(theta));
-		this.w = Math.cos(theta);
-		var conj = this.conjugate();
-		return Quaternion.mult(Quaternion.mult(this, qv), conj).axis;
+		var scaledAxis = Vector.scale(Vector.normalize(this.axis), Math.sin(theta));
+		var scaledW = Math.cos(theta);
+		var scaledQ = new Quaternion(scaledAxis, scaledW);
+		var conj = Quaternion.conjugate(scaledQ);
+		return Quaternion.mult(Quaternion.mult(scaledQ, qv), conj).axis;
 	}
 
 }
@@ -254,6 +255,28 @@ var evenIntervals = [0, 0.25, 0.5, 0.75, 1];
 var fireGrad = new Gradient(fire, evenIntervals);
 var rainbowGrad = new Gradient(rainbow, evenIntervals);
 
+function setSelected(parentId, id) {
+	$("#" + parentId + " .selected").removeClass("selected");
+	$("#" + id).addClass("selected");
+}
+
+function showRGBSelect(on) {
+	if (on) {
+		$(".rgb-select").css({"display": "block"});
+	} else {
+		$(".rgb-select").css({"display": "none"});
+	}
+}
+
+function selectGradient(id) {
+	setSelected("gradLi", id);
+	if (id == "custom") {
+		showRGBSelect(true);
+	} else {
+		showRGBSelect(false);
+	}
+}
+
 class Settings {
 
 	constructor(threeDMode, numCircles, minRadius, maxRadius, minLinFreq, maxLinFreq, minAngVel1, maxAngVel1, minAngVel2, maxAngVel2, axis1, axis2, grad) {
@@ -311,9 +334,12 @@ class Settings {
 		}
 		$("#gradLi .selected").removeClass("selected");
 		if (this.grad == fireGrad) {
-			$("#fire").addClass("selected");
+			selectGradient("fire");
+
+		} else if (this.grad == rainbowGrad) {
+			selectGradient("rainbow");
 		} else {
-			$("#rainbow").addClass("selected");
+			selectGradient("custom");
 		}
 		$("#numCircles").val(this.numCircles);
 		$("#minRadius").val(this.minRadius);
@@ -349,7 +375,7 @@ $(document).ready(function() {
 
 	var defaultSettings = new Settings(
 		false,
-		200,
+		100,
 		25,
 		75,
 		-0.5,
@@ -358,8 +384,8 @@ $(document).ready(function() {
 		0.005,
 		0,
 		0,
-		k,
-		k,
+		new Quaternion(new Vector3(0, 0, 1), 0),
+		j,
 		fireGrad
 	)
 	var activeSettings = defaultSettings;
@@ -375,19 +401,18 @@ $(document).ready(function() {
 			this.linFreq = linFreq;
 			this.angVel1 = angVel1;
 			this.angVel2 = angVel2;
-			console.log(angVel2);
 			this.axis1 = axis1;
 			this.axis2 = axis2;
 			this.axis3 = axis3;
 		}
 
-		update(event) {
+		update(time) {
 			if (activeSettings.threeDMode) {
-				this.axis1.axis = this.axis2.rotate(this.axis1.axis, 0.03);
-				this.axis3 = this.axis2.rotate(this.axis3, 0.03);
+				this.axis1.axis = this.axis2.rotate(this.axis1.axis, this.angVel2);
+				this.axis3 = this.axis2.rotate(this.axis3, this.angVel2);
 			}
 			this.axis3 = this.axis1.rotate(this.axis3, this.angVel1);
-			var posRelToOrigin = Vector.scale(this.axis3, view.size.height / 2 * Math.sin(event.time * this.linFreq));
+			var posRelToOrigin = Vector.scale(this.axis3, view.size.height / 2 * Math.sin(time * this.linFreq));
 			var viewPos = Vector.add(origin, posRelToOrigin);
 			var scaleFactor = 1;
 			if (activeSettings.threeDMode) {
@@ -402,26 +427,28 @@ $(document).ready(function() {
 	}
 
 	var circles = [];
+	var time = 0;
 
-	function makeCircles(activeSettings) {
+	function makeCircles(settings) {
 		circles.map(function(c) {
 			c.circle.remove();
 		});
 		circles = [];
-		for (var i = 0; i < activeSettings.numCircles; i++) {
+		time = 0;
+		for (var i = 0; i < settings.numCircles; i++) {
 			var circle = new Shape.Circle(
 				view.center, 
-				i / activeSettings.numCircles * (activeSettings.maxRadius - activeSettings.minRadius) + activeSettings.minRadius
+				i / settings.numCircles * (settings.maxRadius - settings.minRadius) + settings.minRadius
 			);
-			var color = activeSettings.grad.getColor(i / activeSettings.numCircles);
-			circle.fillColor = "rgb(" + color.x + ", " + color.y + ", " + color.z + ", 0.5)";
+			var color = settings.grad.getColor(i / settings.numCircles);
+			circle.fillColor = "rgb(" + color.x + ", " + color.y + ", " + color.z + ")";
 			circle.sendToBack();
-			var linFreq = i / activeSettings.numCircles * (activeSettings.maxLinFreq - activeSettings.minLinFreq) + activeSettings.minLinFreq;
-			var angVel1 = i / activeSettings.numCircles * (activeSettings.maxAngVel1 - activeSettings.minAngVel1) + activeSettings.minAngVel1;
-			var angVel2 = i / activeSettings.numCircles * (activeSettings.maxAngVel2 - activeSettings.minAngVel2) + activeSettings.minAngVel2;
-			var axis1 = activeSettings.axis1;
-			var axis2 = activeSettings.axis2;
-			var axis3 = Vector.ortho(activeSettings.axis1.axis, 1, 0);
+			var linFreq = i / settings.numCircles * (settings.maxLinFreq - settings.minLinFreq) + settings.minLinFreq;
+			var angVel1 = i / settings.numCircles * (settings.maxAngVel1 - settings.minAngVel1) + settings.minAngVel1;
+			var angVel2 = i / settings.numCircles * (settings.maxAngVel2 - settings.minAngVel2) + settings.minAngVel2;
+			var axis1 = new Quaternion(new Vector3(settings.axis1.axis.x, settings.axis1.axis.y, settings.axis1.axis.z), 0);
+			var axis2 = new Quaternion(new Vector3(settings.axis2.axis.x, settings.axis2.axis.y, settings.axis2.axis.z), 0)
+			var axis3 = Vector.ortho(axis1.axis, 1, 0);
 			var movingCircle = new MovingCircle(circle, linFreq, angVel1, angVel2, axis1, axis2, axis3);
 			circles.push(movingCircle);
 		}
@@ -434,11 +461,6 @@ $(document).ready(function() {
 		makeCircles(activeSettings);
 	});
 
-	function setSelected(parentId, id) {
-		$("#" + parentId + " .selected").removeClass("selected");
-		$("#" + id).addClass("selected");
-	}
-
 	$("#on").click(function() {
 		setSelected("threeDMode", "on");
 	});
@@ -448,16 +470,21 @@ $(document).ready(function() {
 	});
 
 	$("#fire").click(function() {
-		setSelected("gradLi", "fire");
+		selectGradient("fire");
 	});
 
 	$("#rainbow").click(function() {
-		setSelected("gradLi", "rainbow");
+		selectGradient("rainbow");
+	});
+
+	$("#custom").click(function() {
+		selectGradient("custom");
 	});
 
 	view.onFrame = function(event) {
+		time += event.delta;
 		for (var i = 0; i < circles.length; i++) {
-			circles[i].update(event);
+			circles[i].update(time);
 			if (activeSettings.threeDMode) {
 				if (circles[i].circle.previousSibling) {
 					if (circles[i].circle.radius > circles[i].circle.previousSibling.radius) {

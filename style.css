@@ -126,6 +126,11 @@ input:focus {
 	border-color: #0000ff;
 }
 
+.rgb-select {
+	margin-top: 5px;
+	margin-right: 5px;
+	border-bottom: 1px solid #d1d1d1;
+}
 
 
 
