@@ -250,6 +250,14 @@ var fire = [
 	new Vector3(0, 0, 0)
 ];
 
+var sym = [
+	new Vector3(252, 165, 42),
+	new Vector3(252, 42, 77),
+	new Vector3(84, 2, 132),
+	new Vector3(252, 42, 77),
+	new Vector3(252, 165, 42)
+];
+
 var evenIntervals = [0, 0.25, 0.5, 0.75, 1];
 
 var fireGrad = new Gradient(fire, evenIntervals);
@@ -318,8 +326,29 @@ class Settings {
 			(function() {
 				if ($("#gradLi .selected").attr("id") == "fire") {
 					return fireGrad;
-				} else {
+				} else if ($("#gradLi .selected").attr("id") == "rainbow") {
 					return rainbowGrad;
+				} else {
+					var colors = [];
+					var endPoints = [];
+					$(".color").each(function() {
+						var col = $(this).css("background-color");
+						var colArray = col.split(", ");
+						var r = parseFloat(colArray[0].split("(")[1]);
+						var g = parseFloat(colArray[1]);
+						var b = parseFloat(colArray[2].split(")")[0]);
+						colors.push(new Vector3(r, g, b));
+					});
+					var length = colors.length;
+					if (length == 1) {
+						colors.push(colors[0]);
+						return new Gradient(colors, [0, 1]);
+					} else {
+						for (var i = 0; i < length; i++) {
+							endPoints.push(i / (length - 1));
+						}
+						return new Gradient(colors, endPoints);
+					}
 				}
 			})()
 		);
@@ -422,6 +451,7 @@ $(document).ready(function() {
 			this.circle.radius = this.initialRadius * scaleFactor;
 			this.circle.position.x = viewPos.x;
 			this.circle.position.y = viewPos.y;
+			this.circle.z = viewPos.z;
 		}
 
 	}
@@ -481,13 +511,110 @@ $(document).ready(function() {
 		selectGradient("custom");
 	});
 
+	function setRGB(idNum) {
+		var r = $("#rangeR" + idNum).val();
+		var g = $("#rangeG" + idNum).val();
+		var b = $("#rangeB" + idNum).val()
+		$("#color" + idNum).css({"background-color": "rgb(" + r + ", " + g + ", " + b +")"});
+	}
+
+	function attachColorHandlers(textDiv, rangeDiv, idNum) {
+		textDiv.off("keyup");
+		textDiv.off("blur");
+		rangeDiv.off("change");
+		textDiv.keyup(function() {
+			rangeDiv.val(parseFloat(textDiv.val()));
+			setRGB(idNum);
+			
+		});
+		textDiv.blur(function() {
+			if (textDiv.val() == "") {
+				textDiv.val(0);
+				rangeDiv.val(0);
+				setRGB(idNum);
+			}
+		});
+		rangeDiv.change(function() {
+			textDiv.val(parseFloat(rangeDiv.val()));
+			setRGB(idNum);
+		});
+	}
+
+	function updateIdsInRGBSelect(div, i, posNeg) {
+		div.attr("id", "rgb-select" + (i + posNeg * 1));
+		div.find(".add-delete-color").each(function(index) {
+			if (index == 0) {
+				$(this).attr("id", "add" + (i + posNeg * 1));
+			} else {
+				$(this).attr("id", "delete" + (i + posNeg * 1));
+			}
+		});
+		div.find(".color").attr("id", "color" + (i + posNeg * 1));
+		var textDiv = div.find(".textR");
+		textDiv.attr("id", "textR" + (i + posNeg * 1));
+		var rangeDiv = div.find(".rangeR");
+		rangeDiv.attr("id", "rangeR" + (i + posNeg * 1));
+		attachColorHandlers(textDiv, rangeDiv, i + posNeg * 1);
+		var textDiv = div.find(".textG");
+		textDiv.attr("id", "textG" + (i + posNeg * 1));
+		var rangeDiv = div.find(".rangeG");
+		rangeDiv.attr("id", "rangeG" + (i + posNeg * 1));
+		attachColorHandlers(textDiv, rangeDiv, i + posNeg * 1);
+		var textDiv = div.find(".textB");
+		textDiv.attr("id", "textB" + (i + posNeg * 1));
+		var rangeDiv = div.find(".rangeB");
+		rangeDiv.attr("id", "rangeB" + (i + posNeg * 1));
+		attachColorHandlers(textDiv, rangeDiv, i + posNeg * 1);
+		div.find("#add" + (i + posNeg * 1)).each(function() {
+			$(this).off("click");
+			$(this).click(function() {
+				insertColorAfter(i + posNeg * 1);
+			});
+		});
+		div.find("#delete" + (i + posNeg * 1)).each(function() {
+			$(this).off("click");
+			$(this).click(function() {
+				deleteColorAt(i + posNeg * 1);
+			});
+		});
+	}
+
+	function insertColorAfter(idNum) {
+		$(".rgb-select").each(function(i) {
+			if (i > idNum) {
+				updateIdsInRGBSelect($(this), i, 1);
+			}
+		});
+		var newRGBSelect = $("#rgb-select" + idNum).clone();
+		updateIdsInRGBSelect(newRGBSelect, idNum, 1);
+		$("#rgb-select" + idNum).after(newRGBSelect);
+	}
+
+	function deleteColorAt(idNum) {
+		$(".rgb-select").each(function(i) {
+			if (i == idNum) {
+				$(this).remove();
+			} else if (i > idNum) {
+				updateIdsInRGBSelect($(this), i, -1);
+			}
+		});
+	}
+
+	$("#add0").click(function() {
+		insertColorAfter(0);
+	});
+
+	attachColorHandlers($("#textR0"), $("#rangeR0"), 0);
+	attachColorHandlers($("#textG0"), $("#rangeG0"), 0);
+	attachColorHandlers($("#textB0"), $("#rangeB0"), 0);
+
 	view.onFrame = function(event) {
 		time += event.delta;
 		for (var i = 0; i < circles.length; i++) {
 			circles[i].update(time);
 			if (activeSettings.threeDMode) {
 				if (circles[i].circle.previousSibling) {
-					if (circles[i].circle.radius > circles[i].circle.previousSibling.radius) {
+					if (circles[i].circle.z > circles[i].circle.previousSibling.z) {
 						circles[i].circle.moveAbove(circles[i].circle.previousSibling);
 					} else {
 						circles[i].circle.moveBelow(circles[i].circle.previousSibling);
