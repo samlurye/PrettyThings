@@ -403,18 +403,18 @@ $(document).ready(function() {
 	var k = new Quaternion(unitZ, 0);
 
 	var defaultSettings = new Settings(
-		false,
-		100,
-		25,
+		true,
+		200,
+		0,
 		75,
-		-0.5,
+		0.5,
 		1.2,
-		0.002,
 		0.005,
-		0,
-		0,
+		0.005,
+		-0.03,
+		0.03,
 		new Quaternion(new Vector3(0, 0, 1), 0),
-		j,
+		new Quaternion(new Vector3(1, 1, 1), 0),
 		fireGrad
 	)
 	var activeSettings = defaultSettings;
