@@ -287,7 +287,8 @@ function selectGradient(id) {
 
 class Settings {
 
-	constructor(threeDMode, numCircles, minRadius, maxRadius, minLinFreq, maxLinFreq, minAngVel1, maxAngVel1, minAngVel2, maxAngVel2, axis1, axis2, grad) {
+	constructor(threeDMode, numCircles, minRadius, maxRadius, minLinFreq, maxLinFreq, minAngVel1, maxAngVel1, 
+			minAngVel2, maxAngVel2, axis1, axis2, grad, axisC, minAngVelC, maxAngVelC, minRadiusC, maxRadiusC) {
 		this.threeDMode = threeDMode;
 		this.numCircles = numCircles;
 		this.minRadius = minRadius;
@@ -301,6 +302,11 @@ class Settings {
 		this.axis1 = axis1;
 		this.axis2 = axis2;
 		this.grad = grad;
+		this.axisC = axisC;
+		this.minAngVelC = minAngVelC;
+		this.maxAngVelC = maxAngVelC;
+		this.minRadiusC = minRadiusC;
+		this.maxRadiusC = maxRadiusC;
 	}
 
 	static createNew() {
@@ -312,17 +318,31 @@ class Settings {
 					return false;
 				}
 			})(),
-			parseFloat($("#numCircles").val()),
-			parseFloat($("#minRadius").val()),
-			parseFloat($("#maxRadius").val()),
-			parseFloat($("#minLinFreq").val()),
-			parseFloat($("#maxLinFreq").val()),
-			parseFloat($("#minAngVel1").val()),
-			parseFloat($("#maxAngVel1").val()),
-			parseFloat($("#minAngVel2").val()),
-			parseFloat($("#maxAngVel2").val()),
-			new Quaternion(new Vector3(parseFloat($("#axis1X").val()), parseFloat($("#axis1Y").val()), parseFloat($("#axis1Z").val())), 0),
-			new Quaternion(new Vector3(parseFloat($("#axis2X").val()), parseFloat($("#axis2Y").val()), parseFloat($("#axis2Z").val())), 0),
+			parseFloat($("#numCircles").val()) || 0,
+			parseFloat($("#minRadius").val()) || 0,
+			parseFloat($("#maxRadius").val()) || 0,
+			parseFloat($("#minLinFreq").val()) || 0,
+			parseFloat($("#maxLinFreq").val()) || 0,
+			parseFloat($("#minAngVel1").val()) || 0,
+			parseFloat($("#maxAngVel1").val()) || 0,
+			parseFloat($("#minAngVel2").val()) || 0,
+			parseFloat($("#maxAngVel2").val()) || 0,
+			new Quaternion(
+				new Vector3(
+					parseFloat($("#axis1X").val()) || 0, 
+					parseFloat($("#axis1Y").val()) || 0, 
+					parseFloat($("#axis1Z").val()) || 1
+				), 
+				0
+			),
+			new Quaternion(
+				new Vector3(
+					parseFloat($("#axis2X").val()) || 0, 
+					parseFloat($("#axis2Y").val()) || 0, 
+					parseFloat($("#axis2Z").val()) || 1
+				), 
+				0
+			),
 			(function() {
 				if ($("#gradLi .selected").attr("id") == "fire") {
 					return fireGrad;
@@ -350,7 +370,19 @@ class Settings {
 						return new Gradient(colors, endPoints);
 					}
 				}
-			})()
+			})(),
+			new Quaternion(
+				new Vector3(
+					parseFloat($("#axisCX").val()) || 0, 
+					parseFloat($("#axisCY").val()) || 0, 
+					parseFloat($("#axisCZ").val()) || 1
+				), 
+				0
+			),
+			parseFloat($("#minAngVelC").val()) || 0,
+			parseFloat($("#maxAngVelC").val()) || 0,
+			parseFloat($("#minRadiusC").val()) || 0,
+			parseFloat($("#maxRadiusC").val()) || 0 
 		);
 	}
 
@@ -385,6 +417,13 @@ class Settings {
 		$("#axis2X").val(this.axis2.axis.x);
 		$("#axis2Y").val(this.axis2.axis.y);
 		$("#axis2Z").val(this.axis2.axis.z);
+		$("#axisCX").val(this.axisC.axis.x);
+		$("#axisCY").val(this.axisC.axis.y);
+		$("#axisCZ").val(this.axisC.axis.z);
+		$("#minAngVelC").val(this.minAngVelC);
+		$("#maxAngVelC").val(this.maxAngVelC);
+		$("#minRadiusC").val(this.minRadiusC);
+		$("#maxRadiusC").val(this.maxRadiusC);
 	}
 
 }
@@ -404,7 +443,7 @@ $(document).ready(function() {
 
 	var defaultSettings = new Settings(
 		true,
-		200,
+		100,
 		0,
 		75,
 		0.5,
@@ -415,8 +454,13 @@ $(document).ready(function() {
 		0.03,
 		new Quaternion(new Vector3(0, 0, 1), 0),
 		new Quaternion(new Vector3(1, 1, 1), 0),
-		fireGrad
-	)
+		rainbowGrad,
+		new Quaternion(new Vector3(0, 0, 1), 0),
+		-0.1,
+		0.1,
+		0,
+		200
+	);
 	var activeSettings = defaultSettings;
 	activeSettings.load();
 
@@ -424,7 +468,7 @@ $(document).ready(function() {
 
 	class MovingCircle {
 
-		constructor(circle, linFreq, angVel1, angVel2, axis1, axis2, axis3) {
+		constructor(circle, linFreq, angVel1, angVel2, axis1, axis2, axis3, color, colorAxis, radiusC, angVelC) {
 			this.circle = circle;
 			this.initialRadius = this.circle.radius;
 			this.linFreq = linFreq;
@@ -433,25 +477,34 @@ $(document).ready(function() {
 			this.axis1 = axis1;
 			this.axis2 = axis2;
 			this.axis3 = axis3;
+			this.color = color;
+			this.colorAxis = colorAxis;
+			this.angVelC = angVelC;
+			this.radiusC = radiusC;
+			this.colorDelta = Vector.scale(Vector.ortho(this.colorAxis.axis, 1, 0), radiusC);
+			this.colorPivot = Vector.subtract(this.color, this.colorDelta);
 		}
 
 		update(time) {
 			if (activeSettings.threeDMode) {
 				this.axis1.axis = this.axis2.rotate(this.axis1.axis, this.angVel2);
-				this.axis3 = this.axis2.rotate(this.axis3, this.angVel2);
+				this.axis3.axis = this.axis2.rotate(this.axis3.axis, this.angVel2);
 			}
-			this.axis3 = this.axis1.rotate(this.axis3, this.angVel1);
-			var posRelToOrigin = Vector.scale(this.axis3, view.size.height / 2 * Math.sin(time * this.linFreq));
+			this.axis3.axis = this.axis1.rotate(this.axis3.axis, this.angVel1);
+			var posRelToOrigin = Vector.scale(this.axis3.axis, view.size.height / 2 * Math.sin(time * this.linFreq));
 			var viewPos = Vector.add(origin, posRelToOrigin);
 			var scaleFactor = 1;
 			if (activeSettings.threeDMode) {
 				scaleFactor = 1 / (1 + Math.exp(-4 * posRelToOrigin.z / view.size.height));
 			}
-			this.circle.fillColor.alpha = scaleFactor;
 			this.circle.radius = this.initialRadius * scaleFactor;
 			this.circle.position.x = viewPos.x;
 			this.circle.position.y = viewPos.y;
 			this.circle.z = viewPos.z;
+			this.colorDelta = this.colorAxis.rotate(this.colorDelta, this.angVelC);
+			var color = Vector.add(this.colorPivot, this.colorDelta);
+			this.circle.fillColor = "rgb(" + color.x + ", " + color.y + ", " + color.z + ")";
+			this.circle.fillColor.alpha = scaleFactor;
 		}
 
 	}
@@ -478,8 +531,11 @@ $(document).ready(function() {
 			var angVel2 = i / settings.numCircles * (settings.maxAngVel2 - settings.minAngVel2) + settings.minAngVel2;
 			var axis1 = new Quaternion(new Vector3(settings.axis1.axis.x, settings.axis1.axis.y, settings.axis1.axis.z), 0);
 			var axis2 = new Quaternion(new Vector3(settings.axis2.axis.x, settings.axis2.axis.y, settings.axis2.axis.z), 0)
-			var axis3 = Vector.ortho(axis1.axis, 1, 0);
-			var movingCircle = new MovingCircle(circle, linFreq, angVel1, angVel2, axis1, axis2, axis3);
+			var axis3 = new Quaternion(Vector.ortho(axis1.axis, 1, 0), 0);
+			var axisC = new Quaternion(new Vector3(settings.axisC.axis.x, settings.axisC.axis.y, settings.axisC.axis.z), 0);
+			var angVelC = i / settings.numCircles * (settings.maxAngVelC - settings.minAngVelC) + settings.minAngVelC;
+			var radiusC = i / settings.numCircles * (settings.maxRadiusC - settings.minRadiusC) + settings.minRadiusC;
+			var movingCircle = new MovingCircle(circle, linFreq, angVel1, angVel2, axis1, axis2, axis3, color, axisC, radiusC, angVelC);
 			circles.push(movingCircle);
 		}
 	}
@@ -488,6 +544,7 @@ $(document).ready(function() {
 
 	$("#applyAll").click(function() {
 		activeSettings = Settings.createNew();
+		console.log(activeSettings);
 		makeCircles(activeSettings);
 	});
 
@@ -540,41 +597,37 @@ $(document).ready(function() {
 		});
 	}
 
+	function updateRangeAndTextIds(div, color, i, posNeg) {
+		var textDiv = div.find(".text" + color);
+		var rangeDiv = div.find(".range" + color);
+		textDiv.attr("id", "text" + color + (i + posNeg));
+		rangeDiv.attr("id", "range" + color + (i + posNeg));
+		attachColorHandlers(textDiv, rangeDiv, i + posNeg);
+	}
+
 	function updateIdsInRGBSelect(div, i, posNeg) {
-		div.attr("id", "rgb-select" + (i + posNeg * 1));
+		div.attr("id", "rgb-select" + (i + posNeg));
+		div.find(".color").attr("id", "color" + (i + posNeg));
+		updateRangeAndTextIds(div, "R", i, posNeg);
+		updateRangeAndTextIds(div, "G", i, posNeg);
+		updateRangeAndTextIds(div, "B", i, posNeg);
 		div.find(".add-delete-color").each(function(index) {
 			if (index == 0) {
-				$(this).attr("id", "add" + (i + posNeg * 1));
+				$(this).attr("id", "add" + (i + posNeg));
 			} else {
-				$(this).attr("id", "delete" + (i + posNeg * 1));
+				$(this).attr("id", "delete" + (i + posNeg));
 			}
 		});
-		div.find(".color").attr("id", "color" + (i + posNeg * 1));
-		var textDiv = div.find(".textR");
-		textDiv.attr("id", "textR" + (i + posNeg * 1));
-		var rangeDiv = div.find(".rangeR");
-		rangeDiv.attr("id", "rangeR" + (i + posNeg * 1));
-		attachColorHandlers(textDiv, rangeDiv, i + posNeg * 1);
-		var textDiv = div.find(".textG");
-		textDiv.attr("id", "textG" + (i + posNeg * 1));
-		var rangeDiv = div.find(".rangeG");
-		rangeDiv.attr("id", "rangeG" + (i + posNeg * 1));
-		attachColorHandlers(textDiv, rangeDiv, i + posNeg * 1);
-		var textDiv = div.find(".textB");
-		textDiv.attr("id", "textB" + (i + posNeg * 1));
-		var rangeDiv = div.find(".rangeB");
-		rangeDiv.attr("id", "rangeB" + (i + posNeg * 1));
-		attachColorHandlers(textDiv, rangeDiv, i + posNeg * 1);
-		div.find("#add" + (i + posNeg * 1)).each(function() {
+		div.find("#add" + (i + posNeg)).each(function() {
 			$(this).off("click");
 			$(this).click(function() {
-				insertColorAfter(i + posNeg * 1);
+				insertColorAfter(i + posNeg);
 			});
 		});
-		div.find("#delete" + (i + posNeg * 1)).each(function() {
+		div.find("#delete" + (i + posNeg)).each(function() {
 			$(this).off("click");
 			$(this).click(function() {
-				deleteColorAt(i + posNeg * 1);
+				deleteColorAt(i + posNeg);
 			});
 		});
 	}
