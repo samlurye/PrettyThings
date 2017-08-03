@@ -135,7 +135,9 @@ function selectGradient(id) {
 
 function attachApplyAllHandler(makeCircles) {
 	$("#applyAll").click(function() {
-		makeCircles(Settings.createNew());
+		var settings = Settings.createNew();
+		makeCircles(settings);
+		settings.load();
 	});
 }
 
