@@ -1,9 +1,10 @@
 class Settings {
 
-	constructor(threeDMode, animateOrFollow, numCircles, minRadius, maxRadius, minLinFreq, maxLinFreq, minAngVel1, maxAngVel1, 
-			minAngVel2, maxAngVel2, axis1, axis2, gradId, axisC, minAngVelC, maxAngVelC, minRadiusC, maxRadiusC) {
+	constructor(threeDMode, animateOrFollow, elasticity, numCircles, minRadius, maxRadius, minLinFreq, maxLinFreq, minAngVel1, maxAngVel1, 
+			minAngVel2, maxAngVel2, axis1, axis2, gradId, axisC, minAngVelC, maxAngVelC) {
 		this.threeDMode = threeDMode;
 		this.animateOrFollow = animateOrFollow;
+		this.elasticity = elasticity;
 		this.numCircles = numCircles;
 		this.minRadius = minRadius;
 		this.maxRadius = maxRadius;
@@ -20,8 +21,6 @@ class Settings {
 		this.axisC = axisC;
 		this.minAngVelC = minAngVelC;
 		this.maxAngVelC = maxAngVelC;
-		this.minRadiusC = minRadiusC;
-		this.maxRadiusC = maxRadiusC;
 	}
 
 	static createNew() {
@@ -36,6 +35,7 @@ class Settings {
 				}
 			})(),
 			$("#animateOrFollowLi .selected").attr("id"),
+			parseFloat($("#elasticity").val()) || 30,
 			parseFloat($("#numCircles").val()) || 0,
 			parseFloat($("#minRadius").val()) || 0,
 			parseFloat($("#maxRadius").val()) || 0,
@@ -71,9 +71,7 @@ class Settings {
 				0
 			),
 			parseFloat($("#minAngVelC").val()) || 0,
-			parseFloat($("#maxAngVelC").val()) || 0,
-			parseFloat($("#minRadiusC").val()) || 0,
-			parseFloat($("#maxRadiusC").val()) || 0 
+			parseFloat($("#maxAngVelC").val()) || 0
 		);
 	}
 
@@ -86,6 +84,7 @@ class Settings {
 		}
 		$("#animateOrFollowLi .selected").removeClass("selected");
 		$("#" + this.animateOrFollow).addClass("selected");
+		$("#elasticity").val(this.elasticity);
 		$("#gradLi .selected").removeClass("selected");
 		selectGradient(this.gradId);
 		$("#numCircles").val(this.numCircles);
@@ -108,8 +107,6 @@ class Settings {
 		$("#axisCZ").val(this.axisC.axis.z);
 		$("#minAngVelC").val(this.minAngVelC);
 		$("#maxAngVelC").val(this.maxAngVelC);
-		$("#minRadiusC").val(this.minRadiusC);
-		$("#maxRadiusC").val(this.maxRadiusC);
 	}
 
 }

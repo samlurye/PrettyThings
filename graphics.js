@@ -7,6 +7,7 @@ $(document).ready(function() {
 	var defaultSettings = new Settings(
 		false,
 		"follow",
+		30,
 		100,
 		0,
 		75,
@@ -22,8 +23,6 @@ $(document).ready(function() {
 		new Quaternion(new Vector3(0, 0, 1), 0),
 		0,
 		0,
-		0,
-		200
 	);
 
 	var activeSettings = defaultSettings;
@@ -43,7 +42,7 @@ $(document).ready(function() {
 
 	class MovingCircle {
 
-		constructor(circle, threeDMode, animateOrFollow, linFreq, angVel1, angVel2, axis1, axis2, axis3, color, colorAxis, radiusC, angVelC, isHead) {
+		constructor(circle, threeDMode, animateOrFollow, linFreq, angVel1, angVel2, axis1, axis2, axis3, color, colorAxis, angVelC, isHead, elasticity) {
 			this.circle = circle;
 			this.threeDMode = threeDMode;
 			this.animateOrFollow = animateOrFollow;
@@ -57,11 +56,9 @@ $(document).ready(function() {
 			this.color = color;
 			this.colorAxis = colorAxis;
 			this.angVelC = angVelC;
-			this.radiusC = radiusC;
-			this.colorDelta = Vector.scale(Vector.ortho(this.colorAxis.axis, 1, 0), radiusC);
-			this.colorPivot = Vector.subtract(this.color, this.colorDelta);
 			this.isHead = isHead;
 			this.leadingPos = new Vector2(origin.x, origin.y);
+			this.elasticity = elasticity;
 		}
 
 		update(time, deltaTime) {
@@ -87,13 +84,21 @@ $(document).ready(function() {
 				}
 				var circlePos = new Vector2(this.circle.position.x, this.circle.position.y);
 				var leadingForce = Vector.subtract(this.leadingPos, circlePos);
-				var force = Vector.scale(leadingForce, 30);
+				var force = Vector.scale(leadingForce, this.elasticity);
 				this.circle.position.x = this.circle.position.x + force.x * deltaTime;
 				this.circle.position.y = this.circle.position.y + force.y * deltaTime;
 			}
-			this.colorDelta = this.colorAxis.rotate(this.colorDelta, this.angVelC);
-			var color = Vector.add(this.colorPivot, this.colorDelta);
-			this.circle.fillColor = "rgb(" + color.x + ", " + color.y + ", " + color.z + ")";
+			this.color = this.colorAxis.rotate(this.color, this.angVelC);
+			var color = new Vector3(this.color.x, this.color.y, this.color.z);
+			color.array = color.array.map(function(c) {
+				if (c > 255) {
+					c = 255 - (c - 255);
+				} else if (c < 0) {
+					c = -c;
+				}
+				return c;
+			});
+			this.circle.fillColor = "rgb(" + color.array[0] + ", " + color.array[1] + ", " + color.array[2] + ")";
 			this.circle.fillColor.alpha = scaleFactor || 1;
 		}
 
@@ -124,9 +129,8 @@ $(document).ready(function() {
 			var axis3 = new Quaternion(Vector.ortho(axis1.axis, 1, 0), 0);
 			var axisC = new Quaternion(new Vector3(settings.axisC.axis.x, settings.axisC.axis.y, settings.axisC.axis.z), 0);
 			var angVelC = i / settings.numCircles * (settings.maxAngVelC - settings.minAngVelC) + settings.minAngVelC;
-			var radiusC = i / settings.numCircles * (settings.maxRadiusC - settings.minRadiusC) + settings.minRadiusC;
 			var movingCircle = new MovingCircle(circle, settings.threeDMode, settings.animateOrFollow, linFreq, angVel1, angVel2, 
-								axis1, axis2, axis3, color, axisC, radiusC, angVelC, i == 0);
+								axis1, axis2, axis3, color, axisC, angVelC, i == 0, settings.elasticity);
 			circles.push(movingCircle);
 		}
 	}
