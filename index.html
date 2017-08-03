@@ -9,7 +9,11 @@
 
         <script src="paper-full.min.js"></script>
         <script src="jquery.js"></script>
-        <script src="script.js"></script>
+        <script src="vector.js"></script>
+        <script src="quaternion.js"></script>
+        <script src="gradient.js"></script>
+        <script src="UI.js"></script>
+        <script src="graphics.js"></script>
 
     </head>
     <body>
@@ -18,7 +22,19 @@
             <div class="settings-header">Settings</div>
             <div class="apply apply-all" id="applyAll">Apply All</div>
             <ul id="settings">
-                <li id="threeDMode">
+                <li id="animateOrFollowLi">
+                    <div>
+                        <div>
+                            <span class="setting">Animate</span>
+                            <div class="toggle" id="animate"></div>
+                        </div>
+                        <div>
+                            <span class="setting setting-wide">Mouse Follow</span>
+                            <div class="toggle selected" id="follow"></div>
+                        </div>
+                    </div>
+                </li>
+                <li id="threeDModeLi">
                     <div class="setting-title">3D Mode</div>
                     <div>
                         <div>
@@ -39,8 +55,20 @@
                             <div class="toggle selected" id="fire"></div>
                         </div>
                         <div>
+                            <span class="setting setting-wide">Fire (Reversed)</span>
+                            <div class="toggle selected" id="reverseFire"></div>
+                        </div>
+                        <div>
                             <span class="setting">Rainbow</span>
                             <div class="toggle" id="rainbow"></div>
+                        </div>
+                        <div>
+                            <span class="setting">Water</span>
+                            <div class="toggle selected" id="water"></div>
+                        </div>
+                        <div>
+                            <span class="setting">Night</span>
+                            <div class="toggle selected" id="night"></div>
                         </div>
                         <div id="customContainer">
                             <div>
@@ -193,7 +221,7 @@
                         </div>
                     </div>
                 </li>
-                <li>
+                <li id="axisCLi">
                     <div class="setting-title">Axis of Rotation (Color)</div>
                     <div>
                         <div>

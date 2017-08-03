@@ -187,6 +187,10 @@ input:focus {
 	border-color: #d1d1d1;
 }
 
+.setting-wide {
+	width: 170px;
+}
+
 
 
 
