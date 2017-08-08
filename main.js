@@ -147,6 +147,8 @@ $(document).ready(function() {
 
 	attachColor0Handlers();
 
+	attachSaveGradientHandlers();
+
 	var mouseOverSettingsBar = false;
 
 	$(".settings-bar").mouseenter(function() {
@@ -158,7 +160,7 @@ $(document).ready(function() {
 	});
 
 	view.onMouseMove = function(event) {
-		if (!mouseOverSettingsBar) {
+		if (!mouseOverSettingsBar && $(".save-gradient-menu").css("display") == "none") {
 			mousePos = new Vector2(event.point.x, event.point.y);
 		} else {
 			mousePos = new Vector2(origin.x, origin.y);
@@ -169,10 +171,10 @@ $(document).ready(function() {
 		time += event.delta;
 		for (var i = 0; i < circles.length; i++) {
 			circles[i].update(time, event.delta);
-			if (activeSettings.animateOrFollow == "follow" && i < circles.length - 1) {
+			if (circles[i].animateOrFollow == "follow" && i < circles.length - 1) {
 				circles[i + 1].leadingPos = new Vector2(circles[i].circle.position.x, circles[i].circle.position.y);
 			}
-			if (activeSettings.threeDMode) {
+			if (circles[i].threeDMode) {
 				if (circles[i].circle.previousSibling) {
 					if (circles[i].circle.z > circles[i].circle.previousSibling.z) {
 						circles[i].circle.moveAbove(circles[i].circle.previousSibling);

@@ -13,10 +13,23 @@
         <script src="quaternion.js"></script>
         <script src="gradient.js"></script>
         <script src="UI.js"></script>
-        <script src="graphics.js"></script>
+        <script src="main.js"></script>
 
     </head>
     <body>
+        <div class="save-gradient-background"></div>
+        <div class="save-gradient-menu">
+            <div class="save-gradient-menu-inner">
+                <div class="save-gradient-header">Save Custom Gradient</div>
+                <div>
+                    <div class="setting setting-wide gradient-setting">Enter a Name</div>
+                    <input class="save-gradient-input" type="text" id="gradient-name">
+                    <span class="save-gradient-error">A gradient with this name already exists.</span>
+                </div>
+                <div class="apply save-gradient-button">Save</div>
+                <div class="apply cancel-gradient-button">Cancel</div>
+            </div>
+        </div>
         <canvas id="canvas"></canvas>
         <div class="settings-bar">
             <div class="settings-header">Settings</div>
@@ -56,7 +69,7 @@
                         </div>
                         <div>
                             <span class="setting setting-wide">Fire (Reversed)</span>
-                            <div class="toggle selected" id="reverseFire"></div>
+                            <div class="toggle selected" id="firereversed"></div>
                         </div>
                         <div>
                             <span class="setting">Rainbow</span>
@@ -97,6 +110,7 @@
                                     <input type="text" class="text textB" id="textB0" value="0">
                                 </div>
                             </div>
+                            <div class="apply save-gradient">Save This Gradient</div>
                         </div>
                     </div>
                 </li>

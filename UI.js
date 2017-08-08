@@ -28,6 +28,7 @@ class Settings {
 			(function() {
 				var enabled = $("#animateOrFollowLi .selected").attr("id") == "animate"; 
 				if ($("#threeDModeLi .selected").attr("id") == "on" && enabled) {
+					console.log("nice");
 					return true;
 				} else {
 					setSelected("threeDModeLi", "off");
@@ -49,7 +50,7 @@ class Settings {
 				new Vector3(
 					parseFloat($("#axis1X").val()) || 0, 
 					parseFloat($("#axis1Y").val()) || 0, 
-					parseFloat($("#axis1Z").val()) || 1
+					parseFloat($("#axis1Z").val()) || 0
 				), 
 				0
 			),
@@ -57,7 +58,7 @@ class Settings {
 				new Vector3(
 					parseFloat($("#axis2X").val()) || 0, 
 					parseFloat($("#axis2Y").val()) || 0, 
-					parseFloat($("#axis2Z").val()) || 1
+					parseFloat($("#axis2Z").val()) || 0
 				), 
 				0
 			),
@@ -66,7 +67,7 @@ class Settings {
 				new Vector3(
 					parseFloat($("#axisCX").val()) || 0, 
 					parseFloat($("#axisCY").val()) || 0, 
-					parseFloat($("#axisCZ").val()) || 1
+					parseFloat($("#axisCZ").val()) || 0
 				), 
 				0
 			),
@@ -119,8 +120,10 @@ function setSelected(parentId, id) {
 function showRGBSelect(on) {
 	if (on) {
 		$(".rgb-select").css({"display": "block"});
+		$(".save-gradient").css({"display": "block"});
 	} else {
 		$(".rgb-select").css({"display": "none"});
+		$(".save-gradient").css({"display": "none"});
 	}
 }
 
@@ -268,7 +271,70 @@ function attachColor0Handlers() {
 	attachColorHandlers($("#textB0"), $("#rangeB0"), 0);
 }
 
+/*function saveGradientsToStorage() {
+	var gradIds = Object.keys(gradientById);
+	localStorage.setItem("gradIds", gradIds);
+	var origGradIds = ["fire", "firereversed", "water", "night", "rainbow"];
+	for (i = 0; i < gradIds.length; i++) {
+		if (!origGradIds.includes(gradIds[i])) {
+			localStorage.setItem(gradIds[i] + "GradColors", gradientById[gradIds[i]].colors.map(c => c.array));
+			localStorage.setItem(gradIds[i] + "GradEndpoints", gradientById[gradIds[i]].endpoints);
+		}
+	}
+}
 
+function loadGradientsFromStorage() {
+	var origGradIds = ["fire", "firereversed", "water", "night", "rainbow"];
+	var gradIds = localStorage.gradIds.split(",");
+	for (i = 0; i < gradIds.length; i++) {
+		if (!origGradIds.includes(gradIds[i])) {
+			var colorCmps = localStorage[gradIds[i] + "GradColors"].split(",");
+			var colors = [];
+			for (i = 0; i < colorCmps.length; i += 3) {
+				var vec = new Vector3();
+				Vector3.apply(vec, colorCmps.slice(i, i + 3));
+				colors.push(vec);
+			}
+			var endpoints = localStorage[gradIds[i] + "GradEndpoints"];
+			gradientById[gradIds[i]] = new Gradient(colors, endpoints);
+		}
+	}
+	console.log(gradientById);
+}*/
+
+function attachSaveGradientHandlers() {
+	/*if (!localStorage.gradIds) {
+		localStorage.setItem("gradIds", Object.keys(gradientById));
+	} else {
+		loadGradientsFromStorage();
+	}*/
+	$(".save-gradient").click(function() {
+		$(".save-gradient-background").css({"display": "block"});
+		$(".save-gradient-menu").css({"display": "block"});
+	});
+	$(".cancel-gradient-button").click(function() {
+		$(".save-gradient-background").css({"display": "none"});
+		$(".save-gradient-menu").css({"display": "none"});
+	});
+	/*var gradIds = localStorage.gradIds.split(",");
+	$("#gradient-name").focus(function() {
+		gradIds = localStorage.gradIds.split(",");
+	})
+	.keyup(function() {
+		var newId = $(this).val().replace(/\W+/g, "").toLowerCase();
+		if (gradIds.includes(newId) || newId == "custom") {
+			$(".save-gradient-error").css({"display": "block"});
+		} else {
+			$(".save-gradient-error").css({"display": "none"});
+		}
+	});
+	$(".save-gradient-button").click(function() {
+		if (!($(".save-gradient-error").css("display") == "block")) {
+			gradientById[$("#gradient-name").val().replace(/\W+/g, "").toLowerCase()] = loadCustomGradient();
+			saveGradientsToStorage();
+		}
+	});*/
+}
 
 
 

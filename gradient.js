@@ -59,7 +59,7 @@ var fire = [
 	new Vector3(0, 0, 0)
 ];
 
-var reverseFire = fire.slice().reverse();
+var firereversed = fire.slice().reverse();
 
 var water = [
 	new Vector3(255, 255, 255),
@@ -84,36 +84,48 @@ var nightEndPoints = [0, 0.2, 0.4, 0.45, 0.5, 0.9, 0.95, 1];
 
 var fireGrad = new Gradient(fire);
 var rainbowGrad = new Gradient(rainbow);
-var reverseFireGrad = new Gradient(reverseFire);
+var firereversedGrad = new Gradient(firereversed);
 var waterGrad = new Gradient(water);
 var nightGrad = new Gradient(night, nightEndPoints);
 
 var gradientById = {
 	fire: fireGrad,
 	rainbow: rainbowGrad,
-	reverseFire: reverseFireGrad,
+	firereversed: firereversedGrad,
 	water: waterGrad,
 	night: nightGrad
 };
+
+var gradientNames = [
+	"Fire",
+	"Fire (Reversed)",
+	"Rainbow",
+	"Water",
+	"Night"
+];
+
+function loadCustomGradient() {
+	var colors = [];
+	$(".color").each(function() {
+		var col = $(this).css("background-color");
+		var colArray = col.split(", ");
+		var r = parseFloat(colArray[0].split("(")[1]);
+		var g = parseFloat(colArray[1]);
+		var b = parseFloat(colArray[2].split(")")[0]);
+		colors.push(new Vector3(r, g, b));
+	});
+	var length = colors.length;
+	if (length == 1) {
+		colors.push(colors[0]);
+	}
+	return new Gradient(colors);
+}
 
 function findGradientById(id) {
 	if (gradientById[id]) {
 		return gradientById[id];
 	} else {
-		var colors = [];
-		$(".color").each(function() {
-			var col = $(this).css("background-color");
-			var colArray = col.split(", ");
-			var r = parseFloat(colArray[0].split("(")[1]);
-			var g = parseFloat(colArray[1]);
-			var b = parseFloat(colArray[2].split(")")[0]);
-			colors.push(new Vector3(r, g, b));
-		});
-		var length = colors.length;
-		if (length == 1) {
-			colors.push(colors[0]);
-		}
-		return new Gradient(colors);
+		return loadCustomGradient();
 	}
 }
 
