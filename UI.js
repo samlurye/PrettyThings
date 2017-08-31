@@ -1,3 +1,4 @@
+// class to store settings
 class Settings {
 
 	constructor(threeDMode, animateOrFollow, elasticity, numCircles, minRadius, maxRadius, minLinFreq, maxLinFreq, minAngVel1, maxAngVel1, 
@@ -23,12 +24,12 @@ class Settings {
 		this.maxAngVelC = maxAngVelC;
 	}
 
+	// create new settings object based on current values in the UI
 	static createNew() {
 		return new Settings(
 			(function() {
 				var enabled = $("#animateOrFollowLi .selected").attr("id") == "animate"; 
 				if ($("#threeDModeLi .selected").attr("id") == "on" && enabled) {
-					console.log("nice");
 					return true;
 				} else {
 					setSelected("threeDModeLi", "off");
@@ -76,6 +77,7 @@ class Settings {
 		);
 	}
 
+	// based on current settings, update the UI to match
 	load() {
 		$("#threeDMode .selected").removeClass("selected");
 		if (this.threeDMode) {
@@ -112,11 +114,13 @@ class Settings {
 
 }
 
+// set the selected option for a given setting
 function setSelected(parentId, id) {
 	$("#" + parentId + " .selected").removeClass("selected");
 	$("#" + id).addClass("selected");
 }
 
+// show custom gradient menu
 function showRGBSelect(on) {
 	if (on) {
 		$(".rgb-select").css({"display": "block"});
@@ -136,6 +140,7 @@ function selectGradient(id) {
 	}
 }
 
+// set up "Apply All" button
 function attachApplyAllHandler(makeCircles) {
 	$("#applyAll").click(function() {
 		var settings = Settings.createNew();
@@ -144,6 +149,7 @@ function attachApplyAllHandler(makeCircles) {
 	});
 }
 
+// set up animate and follow buttons
 function attachAnimateOrFollowHandlers() {
 	$("#animate").click(function() {
 		setSelected("animateOrFollowLi", "animate");
@@ -153,6 +159,7 @@ function attachAnimateOrFollowHandlers() {
 	});
 }
 
+// set up on and off buttons
 function attachOnOffHandlers() {
 	$("#on").click(function() {
 		setSelected("threeDModeLi", "on");
@@ -162,12 +169,14 @@ function attachOnOffHandlers() {
 	});
 }
 
+// set up single gradient selector
 function attachGradientHandler(id) {
 	$("#" + id).click(function() {
 		selectGradient(id);
 	});
 }
 
+// set up all gradient selectors
 function attachGradientHandlers() {
 	var gradientIds = []
 	for (var id in gradientById) {
@@ -176,6 +185,7 @@ function attachGradientHandlers() {
 	attachGradientHandler("custom");
 }
 
+// in custom gradient menu, update the color of the rectangle based on the slider values
 function setRGB(idNum) {
 	var r = $("#rangeR" + idNum).val();
 	var g = $("#rangeG" + idNum).val();
@@ -183,6 +193,7 @@ function setRGB(idNum) {
 	$("#color" + idNum).css({"background-color": "rgb(" + r + ", " + g + ", " + b +")"});
 }
 
+// set up custom gradient menu buttons
 function attachColorHandlers(textDiv, rangeDiv, idNum) {
 	textDiv.off("keyup");
 	textDiv.off("blur");
@@ -205,6 +216,7 @@ function attachColorHandlers(textDiv, rangeDiv, idNum) {
 	});
 }
 
+// a bunch of functions for dealing with adding and deleting colors from custom gradients
 function updateRangeAndTextIds(div, color, i, posNeg) {
 	var textDiv = div.find(".text" + color);
 	var rangeDiv = div.find(".range" + color);
@@ -265,49 +277,12 @@ function attachColor0Handlers() {
 	$("#add0").click(function() {
 		insertColorAfter(0);
 	});
-
 	attachColorHandlers($("#textR0"), $("#rangeR0"), 0);
 	attachColorHandlers($("#textG0"), $("#rangeG0"), 0);
 	attachColorHandlers($("#textB0"), $("#rangeB0"), 0);
 }
 
-/*function saveGradientsToStorage() {
-	var gradIds = Object.keys(gradientById);
-	localStorage.setItem("gradIds", gradIds);
-	var origGradIds = ["fire", "firereversed", "water", "night", "rainbow"];
-	for (i = 0; i < gradIds.length; i++) {
-		if (!origGradIds.includes(gradIds[i])) {
-			localStorage.setItem(gradIds[i] + "GradColors", gradientById[gradIds[i]].colors.map(c => c.array));
-			localStorage.setItem(gradIds[i] + "GradEndpoints", gradientById[gradIds[i]].endpoints);
-		}
-	}
-}
-
-function loadGradientsFromStorage() {
-	var origGradIds = ["fire", "firereversed", "water", "night", "rainbow"];
-	var gradIds = localStorage.gradIds.split(",");
-	for (i = 0; i < gradIds.length; i++) {
-		if (!origGradIds.includes(gradIds[i])) {
-			var colorCmps = localStorage[gradIds[i] + "GradColors"].split(",");
-			var colors = [];
-			for (i = 0; i < colorCmps.length; i += 3) {
-				var vec = new Vector3();
-				Vector3.apply(vec, colorCmps.slice(i, i + 3));
-				colors.push(vec);
-			}
-			var endpoints = localStorage[gradIds[i] + "GradEndpoints"];
-			gradientById[gradIds[i]] = new Gradient(colors, endpoints);
-		}
-	}
-	console.log(gradientById);
-}*/
-
-function attachSaveGradientHandlers() {
-	/*if (!localStorage.gradIds) {
-		localStorage.setItem("gradIds", Object.keys(gradientById));
-	} else {
-		loadGradientsFromStorage();
-	}*/
+/*function attachSaveGradientHandlers() {
 	$(".save-gradient").click(function() {
 		$(".save-gradient-background").css({"display": "block"});
 		$(".save-gradient-menu").css({"display": "block"});
@@ -316,7 +291,6 @@ function attachSaveGradientHandlers() {
 		$(".save-gradient-background").css({"display": "none"});
 		$(".save-gradient-menu").css({"display": "none"});
 	});
-	/*var gradIds = localStorage.gradIds.split(",");
 	$("#gradient-name").focus(function() {
 		gradIds = localStorage.gradIds.split(",");
 	})
@@ -333,8 +307,9 @@ function attachSaveGradientHandlers() {
 			gradientById[$("#gradient-name").val().replace(/\W+/g, "").toLowerCase()] = loadCustomGradient();
 			saveGradientsToStorage();
 		}
-	});*/
-}
+	});
+}*/
+
 
 
 

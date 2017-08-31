@@ -1,3 +1,5 @@
+
+// linearly interpolates between to endpoints, vstart and vend
 class LinearInterpolator {
 
 	constructor(vstart, vend) {
@@ -12,10 +14,15 @@ class LinearInterpolator {
 
 }
 
+// a class to generate color gradients
 class Gradient {
 
 	constructor(colors, endPoints) {
+		// the color endpoints of the gradient
 		this.colors = colors;
+		// if, for example, endPoints is [0, 0.9, 1], then the gradient has 3 color
+		// endPoints, where 90% of the gradient is the transition between the 1st and 2nd color,
+		// and 10% is the transition between the 2nd and the 3rd color
 		if (endPoints) {
 			this.endPoints = endPoints;
 		} else {
@@ -25,12 +32,14 @@ class Gradient {
 				this.endPoints.push(i / (length - 1));
 			}
 		}
+		// an array of linear interpolates, for interpolating between the colors
 		this.LIs = [];
 		for (var j = 1; j < this.colors.length; j++) {
 			this.LIs.push(new LinearInterpolator(this.colors[j - 1], this.colors[j]))
 		}
 	}
 
+	// given a percent of progress through the gradient, get the current color
 	getColor(pct) {
 		for (var j = 1; j < this.endPoints.length; j++) {
 			if (pct <= this.endPoints[j]) {
@@ -42,6 +51,7 @@ class Gradient {
 
 }
 
+// some preset gradients
 var rainbow = [
 	new Vector3(255, 255, 255),
 	new Vector3(252, 106, 145),
@@ -104,6 +114,15 @@ var gradientNames = [
 	"Night"
 ];
 
+var origGradIds = [
+	"fire",
+	"firereversed",
+	"rainbow",
+	"water",
+	"night"
+]
+
+// create a custom gradient
 function loadCustomGradient() {
 	var colors = [];
 	$(".color").each(function() {
@@ -121,6 +140,7 @@ function loadCustomGradient() {
 	return new Gradient(colors);
 }
 
+
 function findGradientById(id) {
 	if (gradientById[id]) {
 		return gradientById[id];
@@ -128,6 +148,14 @@ function findGradientById(id) {
 		return loadCustomGradient();
 	}
 }
+
+/*function saveGradientsToStorage() {
+	localStorage.setItem("gradients", JSON.stringify(gradientById));
+}
+
+function loadGradientsFromStorage() {
+	gradientById = JSON.parse(localStorage.gradients);
+}*/
 
 
 
