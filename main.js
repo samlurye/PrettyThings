@@ -214,7 +214,6 @@ $(document).ready(function() {
 		time += event.delta;
 		// iterate over all the circles on the screen
 		for (var i = 0; i < circles.length; i++) {
-			console.log(mousePos);
 			// update the circle
 			circles[i].update(time, event.delta);
 			// update the leading position of the circle
